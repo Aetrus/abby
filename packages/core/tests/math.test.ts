@@ -1,4 +1,8 @@
-import { getWeightedRandomVariant, validateWeights } from "../src/mathHelpers";
+import {
+  getVariantWithHeighestWeightOrFirst,
+  getWeightedRandomVariant,
+  validateWeights,
+} from "../src/mathHelpers";
 
 describe("Math helpers", () => {
   it("validates weight", () => {
@@ -21,6 +25,25 @@ describe("Math helpers", () => {
   it("gets proper variants", () => {
     const variants = ["a", "b", "c"];
     expect(getWeightedRandomVariant(variants, [0.3, 0.3, 0.3])).oneOf(variants);
+  });
+
+  it("selects the global highest weight when weights are non-monotonic", () => {
+    expect(
+      getVariantWithHeighestWeightOrFirst(["a", "b", "c"], [0.6, 0.1, 0.3])
+    ).toBe("a");
+    expect(
+      getVariantWithHeighestWeightOrFirst(
+        ["a", "b", "c", "d"],
+        [0.1, 0.5, 0.1, 0.3]
+      )
+    ).toBe("b");
+  });
+
+  it("keeps the first variant with the highest weight when weights tie", () => {
+    expect(
+      getVariantWithHeighestWeightOrFirst(["a", "b", "c"], [0.4, 0.2, 0.4])
+    ).toBe("a");
+    expect(getVariantWithHeighestWeightOrFirst(["a", "b", "c"])).toBe("a");
   });
 
   it("produces roughly equal distribution for equal weights", () => {

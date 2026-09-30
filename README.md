@@ -51,6 +51,8 @@ This turborepo uses [pnpm](https://pnpm.io) as a package manager. It includes th
 - `next`: The Abby Next.js SDK
 - `angular`: The Abby Angular SDK
 - `svelte`: The Abby Svelte SDK
+- `vue`: The Abby Vue 3 SDK, with a request-scoped Nuxt integration recipe
+- `vue-example`: An offline Vue + TypeScript integration demo
 
 Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
 

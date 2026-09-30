@@ -66,10 +66,12 @@ export function getVariantWithHeighestWeightOrFirst<
 >(variants: Variants, weights?: Array<number>): Variants[number] {
   const validatedWeights = validateWeights(variants, weights);
   let variantWithHeighestWeight = variants[0];
+  let highestWeight = validatedWeights[0];
 
   for (let i = 1; i < variants.length; i++) {
-    if (validatedWeights[i] > validatedWeights[i - 1]) {
+    if (validatedWeights[i] > highestWeight) {
       variantWithHeighestWeight = variants[i];
+      highestWeight = validatedWeights[i];
     }
   }
 

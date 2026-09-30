@@ -1,0 +1,46 @@
+{
+  "name": "@tryabby/vue",
+  "version": "0.0.0",
+  "description": "Typed, reactive Vue 3 integration for Abby",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup src/index.ts",
+    "dev": "pnpm run build --watch",
+    "test": "vitest run && tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "test:package": "node scripts/verify-package.mjs"
+  },
+  "homepage": "https://docs.tryabby.com",
+  "license": "AGPL-3.0-only",
+  "peerDependencies": {
+    "vue": "^3.3.0"
+  },
+  "dependencies": {
+    "@tryabby/core": "workspace:*",
+    "js-cookie": "^3.0.1"
+  },
+  "devDependencies": {
+    "@types/js-cookie": "^3.0.3",
+    "@types/node": "^20.0.0",
+    "@vue/server-renderer": "3.5.13",
+    "@vue/test-utils": "^2.4.6",
+    "jsdom": "^20.0.3",
+    "tsconfig": "workspace:*",
+    "tsup": "^6.5.0",
+    "typescript": "5.5.4",
+    "vite": "5.4.0",
+    "vitest": "2.0.5",
+    "vue": "3.5.13"
+  }
+}

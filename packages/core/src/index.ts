@@ -263,6 +263,7 @@ export class Abby<
   /**
    * Helper function to transform the data which is fetched from the server
    * to the local data structure
+   * Keep raw values so targeting can fall back when user properties change.
    */
   private responseToLocalData<FlagName extends string, TestName extends string>(
     data: AbbyDataResponse
@@ -281,15 +282,12 @@ export class Abby<
           };
           return acc;
         },
-        (this.config.tests ?? {}) as any
+        { ...this.config.tests } as any
       ),
       flags: data.flags.reduce(
         (acc, { name, value, ruleSet }) => {
-          const evaluatedValue = ruleSet
-            ? this.evaluateUserProperties<typeof value>(ruleSet)
-            : value;
           acc[name] = {
-            value: evaluatedValue ?? value,
+            value,
             ruleSet,
           };
           return acc;
@@ -298,11 +296,8 @@ export class Abby<
       ),
       remoteConfig: (data.remoteConfig ?? []).reduce(
         (acc, { name, value, ruleSet }) => {
-          const evaluatedValue = ruleSet
-            ? this.evaluateUserProperties<typeof value>(ruleSet)
-            : value;
           acc[name] = {
-            value: evaluatedValue ?? value,
+            value,
             ruleSet,
           };
           return acc;
@@ -329,15 +324,18 @@ export class Abby<
           };
           return acc;
         },
-        this.#data.tests
+        {} as LocalData<FlagName, TestName, RemoteConfigName>["tests"]
       ),
-      flags: Object.keys(this.#data.flags).reduce((acc, flagName) => {
-        acc[flagName as FlagName] = {
-          value: this.getFeatureFlag(flagName as FlagName),
-          ruleSet: this.#data.flags[flagName as FlagName].ruleSet,
-        };
-        return acc;
-      }, this.#data.flags),
+      flags: Object.keys(this.#data.flags).reduce(
+        (acc, flagName) => {
+          acc[flagName as FlagName] = {
+            value: this.getFeatureFlag(flagName as FlagName),
+            ruleSet: this.#data.flags[flagName as FlagName].ruleSet,
+          };
+          return acc;
+        },
+        {} as LocalData<FlagName, TestName, RemoteConfigName>["flags"]
+      ),
       remoteConfig: Object.keys(this.#data.remoteConfig).reduce(
         (acc, remoteConfigName) => {
           acc[remoteConfigName as RemoteConfigName] = {
@@ -348,7 +346,7 @@ export class Abby<
           };
           return acc;
         },
-        this.#data.remoteConfig
+        {} as LocalData<FlagName, TestName, RemoteConfigName>["remoteConfig"]
       ),
     };
   }
@@ -358,15 +356,20 @@ export class Abby<
    * potentially setting the local overrides which are read from document.cookie if
    * we are in a browser environment
    * @param data
+   * @param options Set cookies to false to defer reading browser overrides.
    * @returns
    */
-  init(data: AbbyDataResponse) {
+  init(data: AbbyDataResponse, options?: { cookies?: boolean }) {
     this.log("init()", data);
 
     this.#data = this.responseToLocalData(data);
     this.notifyListeners();
 
-    if (typeof window !== "undefined" && typeof document !== "undefined") {
+    if (
+      options?.cookies !== false &&
+      typeof window !== "undefined" &&
+      typeof document !== "undefined"
+    ) {
       this.setLocalOverrides(document.cookie);
     }
 
@@ -496,6 +499,11 @@ export class Abby<
           RemoteConfig[RemoteConfigName]
         >;
       }
+
+      return this.getDefaultRemoteConfigValue(
+        key,
+        this.config.remoteConfig as RemoteConfig
+      ) as RemoteConfigValueStringToType<Curr>;
     }
 
     this.log("getRemoteConfig() => storedValue:", storedValue);
@@ -532,13 +540,17 @@ export class Abby<
 
     const override = this.testOverrides.get(key);
 
-    if (process.env.NODE_ENV === "development" && override != null) {
+    if (
+      process.env.NODE_ENV === "development" &&
+      override != null &&
+      variants.includes(override)
+    ) {
       return override;
     }
 
     const persistedValue = this.persistantTestStorage?.get(key as string);
 
-    if (persistedValue != null) {
+    if (persistedValue != null && variants.includes(persistedValue)) {
       this.log("getTestVariant() => persistedValue:", persistedValue);
 
       return persistedValue;

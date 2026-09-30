@@ -1,0 +1,20 @@
+{
+  "name": "vue-example",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "preview": "vite preview --host 0.0.0.0"
+  },
+  "dependencies": {
+    "@tryabby/core": "workspace:*",
+    "@tryabby/vue": "workspace:*",
+    "vue": "3.5.13"
+  },
+  "devDependencies": {
+    "typescript": "5.5.4",
+    "vite": "5.4.0"
+  }
+}
